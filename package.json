@@ -21,7 +21,7 @@
 		"url": "https://github.com/simgate-dev/n8n-nodes-simgate.git"
 	},
 	"engines": {
-		"node": ">=20.19"
+		"node": ">=22.22"
 	},
 	"scripts": {
 		"build": "n8n-node build",
