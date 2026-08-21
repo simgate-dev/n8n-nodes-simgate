@@ -25,7 +25,7 @@ export const deviceDescription: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/devices/{{$parameter.deviceId}}',
+						url: '=/devices/{{ $parameter.deviceId.value }}',
 					},
 				},
 			},
@@ -57,7 +57,7 @@ export const deviceDescription: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/devices/{{$parameter.deviceId}}/status',
+						url: '=/devices/{{ $parameter.deviceId.value }}/status',
 					},
 				},
 			},
@@ -65,14 +65,29 @@ export const deviceDescription: INodeProperties[] = [
 		default: 'getAll',
 	},
 	{
-		displayName: 'Device Name or ID',
+		displayName: 'Device',
 		name: 'deviceId',
-		type: 'options',
-		typeOptions: { loadOptionsMethod: 'getDevices' },
-		displayOptions: { show: showOnlyForSingleDevice },
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description:
-			'The phone to look up. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		displayOptions: { show: showOnlyForSingleDevice },
+		description: 'The phone to look up',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'searchDevices',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'android-5q15b182f2704gbz',
+			},
+		],
 	},
 ];

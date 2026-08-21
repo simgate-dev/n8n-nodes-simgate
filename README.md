@@ -7,7 +7,7 @@ SimGate turns an Android phone into an SMS gateway. Your messages go out from yo
 This package adds two nodes:
 
 - **SimGate** — send an SMS, check a message's status, list your phones, read your quota.
-- **SimGate Trigger** — start a workflow when your phone receives an SMS or a call.
+- **SimGate Trigger** — start a workflow when your phone receives an SMS.
 
 [Installation](#installation) · [Credentials](#credentials) · [Operations](#operations) · [SimGate Trigger](#simgate-trigger) · [Compatibility](#compatibility)
 
@@ -57,6 +57,8 @@ The response looks like this:
 
 If the phone is briefly offline, SimGate queues the message and retries automatically. The node still succeeds, but the item carries `"queued": true`. Use **Message → Get** with the `messageId` to poll for the final state.
 
+**Message → Get** returns the fields you usually want. Turn **Simplify** off to get every delivery field, including attempt counts and each stage's timestamp.
+
 ### Device
 
 | Operation | What it does |
@@ -94,8 +96,6 @@ An `sms.received` event arrives as:
   }
 }
 ```
-
-Call events (`call.incoming`, `call.answered`, `call.ended`) use the same envelope, with `callId`, `direction`, and — on `call.ended` — `durationSeconds`.
 
 ## Compatibility
 

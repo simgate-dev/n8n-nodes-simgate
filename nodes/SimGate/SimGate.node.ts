@@ -1,7 +1,7 @@
 import {
 	NodeConnectionTypes,
 	type ILoadOptionsFunctions,
-	type INodePropertyOptions,
+	type INodeListSearchResult,
 	type INodeType,
 	type INodeTypeDescription,
 } from 'n8n-workflow';
@@ -72,8 +72,11 @@ export class SimGate implements INodeType {
 	};
 
 	methods = {
-		loadOptions: {
-			async getDevices(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+		listSearch: {
+			async searchDevices(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
 				const credentials = await this.getCredentials('simGateApi');
 				const response = (await this.helpers.httpRequestWithAuthentication.call(
 					this,
@@ -85,12 +88,21 @@ export class SimGate implements INodeType {
 					},
 				)) as { devices?: SimGateDevice[] };
 
-				return (response.devices ?? []).map((device) => ({
+				const results = (response.devices ?? []).map((device) => ({
 					name: device.deviceName
 						? `${device.deviceName} (${device.connectionStatus ?? 'unknown'})`
 						: device.deviceId,
 					value: device.deviceId,
 				}));
+
+				if (filter) {
+					const needle = filter.toLowerCase();
+					return {
+						results: results.filter((r) => r.name.toLowerCase().includes(needle)),
+					};
+				}
+
+				return { results };
 			},
 		},
 	};

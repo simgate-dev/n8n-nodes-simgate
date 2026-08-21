@@ -25,7 +25,7 @@ export class SimGateTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["events"].join(", ")}}',
-		description: 'Starts a workflow when your phone receives an SMS or a call',
+		description: 'Starts a workflow when your phone receives an SMS',
 		defaults: {
 			name: 'SimGate Trigger',
 		},
@@ -51,21 +51,6 @@ export class SimGateTrigger implements INodeType {
 				name: 'events',
 				type: 'multiOptions',
 				options: [
-					{
-						name: 'Call Answered',
-						value: 'call.answered',
-						description: 'An incoming call was answered on the phone',
-					},
-					{
-						name: 'Call Ended',
-						value: 'call.ended',
-						description: 'A call finished, including its duration',
-					},
-					{
-						name: 'Call Incoming',
-						value: 'call.incoming',
-						description: 'The phone started ringing',
-					},
 					{
 						name: 'SMS Received',
 						value: 'sms.received',
@@ -188,7 +173,7 @@ export class SimGateTrigger implements INodeType {
 		if (!request.rawBody) {
 			throw new NodeOperationError(
 				this.getNode(),
-				'Could not read the raw request body, so the SimGate signature cannot be verified',
+				"Could not read the request body, so the SimGate signature cannot be checked. Make sure nothing between SimGate and n8n rewrites the request, such as a proxy that re-encodes JSON.",
 			);
 		}
 		const body = request.rawBody.toString('utf8');
@@ -212,14 +197,17 @@ export class SimGateTrigger implements INodeType {
 				expectedBuffer.length !== receivedBuffer.length ||
 				!timingSafeEqual(expectedBuffer, receivedBuffer)
 			) {
-				throw new NodeOperationError(this.getNode(), 'Invalid SimGate webhook signature');
+				throw new NodeOperationError(
+					this.getNode(),
+					"The signature on this request does not match the signing secret. Copy the current secret from Webhooks in the SimGate dashboard into 'Webhook Signing Secret' on your SimGate API credential, or leave that field empty to let the trigger fetch it when it registers.",
+				);
 			}
 
 			const age = Math.abs(Date.now() / 1000 - Number(timestamp));
 			if (!Number.isFinite(age) || age > TIMESTAMP_TOLERANCE_SECONDS) {
 				throw new NodeOperationError(
 					this.getNode(),
-					'SimGate webhook timestamp is outside the allowed tolerance, so it was rejected as a replay',
+					'This request was signed more than five minutes ago, so it was turned away in case it was replayed. Check that the clock on this n8n host is accurate, then ask SimGate to resend.',
 				);
 			}
 		}
@@ -228,7 +216,10 @@ export class SimGateTrigger implements INodeType {
 		try {
 			event = JSON.parse(body) as SimGateEvent;
 		} catch {
-			throw new NodeOperationError(this.getNode(), 'SimGate webhook body is not valid JSON');
+			throw new NodeOperationError(
+				this.getNode(),
+				'The request body was not valid JSON. Confirm the SimGate dashboard points at this workflow URL and that no proxy in front of n8n is altering the body.',
+			);
 		}
 
 		// Acknowledge events the user did not subscribe to without starting a workflow run.

@@ -7,15 +7,31 @@ const showOnlyForMessageSend = {
 
 export const messageSendDescription: INodeProperties[] = [
 	{
-		displayName: 'Device Name or ID',
+		displayName: 'Device',
 		name: 'deviceId',
-		type: 'options',
-		typeOptions: { loadOptionsMethod: 'getDevices' },
-		displayOptions: { show: showOnlyForMessageSend },
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description:
-			'The phone that sends the SMS. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		displayOptions: { show: showOnlyForMessageSend },
+		description: 'The phone that sends the SMS',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'searchDevices',
+					searchable: true,
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'android-5q15b182f2704gbz',
+			},
+		],
+		// RoutingNode extracts resourceLocator values before send, so this receives the ID string
 		routing: { send: { type: 'body', property: 'deviceId' } },
 	},
 	{
