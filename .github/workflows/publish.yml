@@ -28,14 +28,16 @@
 #   4. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
 #      token is used instead — no secret ever touches your repo settings.
 #
-# Option B — npm Automation Token (fallback):
-#   1. On npmjs.com: Access Tokens → Generate New Token → Granular Access Token.
-#      Scope it to this package with "Read and write" publish permission.
-#   2. In GitHub: Settings → Secrets and variables → Actions → New secret.
-#      Name it NPM_TOKEN and paste the token value.
+# Option B — npm Automation Token: no longer used here, and not recommended.
+#   npm is restricting tokens that bypass 2FA for direct publishing. This repo had a
+#   granular NPM_TOKEN that published 0.1.1 on 22 Aug 2026 and was refused for 0.1.2
+#   on 10 Sep with "404 Not Found - PUT" — npm's opaque way of saying the credential
+#   is not accepted. Trusted publishing above replaces it; delete the secret once a
+#   release has gone out under OIDC, so it can never shadow the exchange again.
 #
-# Both options work with --provenance. Provenance is signed by GitHub's OIDC
-# infrastructure regardless of how npm authentication is handled.
+# Provenance is signed by GitHub's OIDC infrastructure either way — note that the
+# 0.1.2 failure signed provenance successfully *before* the registry rejected the
+# write, so a signed statement in the transparency log is not proof of a publish.
 #
 # ─── TAG CONVENTION ────────────────────────────────────────────────────────────
 #
@@ -61,6 +63,14 @@ on:
       # See "TAG CONVENTION" above if you prefer tags with a "v" prefix.
       - '*.*.*'
 
+# The release pushes the commit and the tag in quick succession, which produced two
+# Publish runs for the same tag on 0.1.2. Serialise them so two jobs never race to
+# publish the same version; the loser fails on npm's version conflict, which is
+# harmless. Never cancel in progress here — that could kill a publish mid-flight.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to npm
@@ -80,20 +90,27 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'npm'
+          # Required for OIDC trusted publishing: this is what writes the registry
+          # into .npmrc so npm knows where to perform the token exchange. Without it
+          # the publish request goes out unauthenticated and npm answers 404 on PUT.
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies
         run: 'npm ci'
 
+      # npm's OIDC trusted publishing needs npm >= 11.5.1. `lts/*` generally ships a
+      # new enough npm, but pinning it here means a runner image change can't quietly
+      # drop us back to token auth.
+      - name: Ensure npm supports trusted publishing
+        run: npm install -g npm@latest
+
       - name: Release
-        # Publishes to npm with a provenance attestation (requires id-token: write above).
-        # Lint and build run automatically as part of the release process.
+        # Authentication is OIDC trusted publishing — no NPM_TOKEN. The exchange needs
+        # `id-token: write` above and `registry-url` on setup-node, and the publisher
+        # must be registered on npmjs.com under this package's Trusted Publishers
+        # (repository simgate-dev/n8n-nodes-simgate, workflow publish.yml).
         #
-        # Option A (OIDC): leave NPM_TOKEN unset — the token step is skipped and
-        #   npm uses the OIDC exchange instead.
-        # Option B (token): set NPM_TOKEN in repo secrets — it is written to
-        #   .npmrc here before publishing.
-        run: |
-          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-          npm run release
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # A long-lived NPM_TOKEN is deliberately not used: npm is restricting tokens
+        # that bypass 2FA for direct publishing, which is what broke the 0.1.2 attempt.
+        # Lint and build run automatically as part of the release process.
+        run: npm run release
