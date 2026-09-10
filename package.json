@@ -14,14 +14,14 @@
 	],
 	"author": {
 		"name": "Nikola",
-		"email": "nikola@viametrics.com"
+		"email": "nmitrovic470@gmail.com"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/simgate-dev/n8n-nodes-simgate.git"
 	},
 	"engines": {
-		"node": ">=22.22"
+		"node": ">=20.19"
 	},
 	"scripts": {
 		"build": "n8n-node build",

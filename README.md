@@ -13,13 +13,15 @@ This package adds two nodes:
 
 ## Installation
 
-### n8n Cloud
-
-Search for `SimGate` in the nodes panel and add it to your canvas.
-
 ### Self-hosted
 
-Go to **Settings → Community nodes → Install**, enter `n8n-nodes-simgate`, and confirm.
+Go to **Settings → Community nodes → Install**, enter `n8n-nodes-simgate`, and confirm. You need an owner or admin account.
+
+### n8n Cloud
+
+Not yet. Installing community nodes from npm is a self-hosted feature, and n8n Cloud offers only nodes that have completed n8n's verification review — this package is in that queue.
+
+Until it clears, call the SimGate API from an HTTP Request node. The requests are the same ones this node makes, so swapping the node in later is a straight replacement: see [the setup on simgate.app](https://simgate.app/integrations/n8n).
 
 ## Credentials
 
@@ -99,7 +101,9 @@ An `sms.received` event arrives as:
 
 ## Compatibility
 
-Requires n8n 1.0 or later and Node.js 20.19 or later. Tested against the SimGate API v1.
+Requires n8n 1.0 or later and Node.js 20.19 or later — the same Node floor as n8n 1.x. n8n 2.x raises that floor to Node 24 on its own. Tested against the SimGate API v1.
+
+Lint and build run on that same Node 20.19. Only `npm run dev`, which boots a local n8n instance to test against, needs the newer Node pinned in `.nvmrc`.
 
 ## Resources
 
