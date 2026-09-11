@@ -47,12 +47,19 @@
 #
 # ─── RELEASE PROCESS ───────────────────────────────────────────────────────────
 #
-# Run the following command locally to start an interactive release:
+# 1. Run the following command locally to start an interactive release:
 #
-#   npm run release
+#      npm run release
 #
-# This will lint, build, prompt for a version bump, update the changelog,
-# commit, tag, and push — which triggers this workflow to publish to npm.
+#    This will lint, build, prompt for a version bump, update the changelog,
+#    commit, tag, and push — which triggers this workflow.
+#
+# 2. The workflow STAGES the release; it is not yet installable. Approve it:
+#
+#      npm stage list n8n-nodes-simgate
+#      npm stage approve <stage-id>        # prompts for 2FA
+#
+#    Only then does the version go live. `npm stage reject <stage-id>` discards it.
 
 name: Publish
 
@@ -104,13 +111,28 @@ jobs:
       - name: Ensure npm supports trusted publishing
         run: npm install -g npm@latest
 
-      - name: Release
-        # Authentication is OIDC trusted publishing — no NPM_TOKEN. The exchange needs
-        # `id-token: write` above and `registry-url` on setup-node, and the publisher
-        # must be registered on npmjs.com under this package's Trusted Publishers
-        # (repository simgate-dev/n8n-nodes-simgate, workflow publish.yml).
-        #
-        # A long-lived NPM_TOKEN is deliberately not used: npm is restricting tokens
-        # that bypass 2FA for direct publishing, which is what broke the 0.1.2 attempt.
-        # Lint and build run automatically as part of the release process.
-        run: npm run release
+      # `n8n-node release` in CI does exactly three things: lint, build, then
+      # `npm publish` with provenance. Those are inlined below so the last step can be
+      # `npm stage publish` instead.
+      #
+      # The trusted publisher for this package is deliberately stage-only — it is NOT
+      # granted `npm publish`. A tag therefore stages a release that stays invisible on
+      # npm until a maintainer approves it:
+      #
+      #     npm stage list n8n-nodes-simgate
+      #     npm stage approve <stage-id>      # prompts for 2FA
+      #
+      # Approve/reject cannot use OIDC tokens — npm requires proof of presence — so no
+      # CI run and nobody with repo write access can make a version public alone.
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Stage the release on npm
+        # RELEASE_MODE satisfies the `prepublishOnly` guard (`n8n-node prerelease`),
+        # which aborts any publish not started by `npm run release`.
+        run: npm stage publish --provenance
+        env:
+          RELEASE_MODE: 'true'
