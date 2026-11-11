@@ -95,7 +95,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version-file: '.nvmrc'
           cache: 'npm'
           # Required for OIDC trusted publishing: this is what writes the registry
           # into .npmrc so npm knows where to perform the token exchange. Without it

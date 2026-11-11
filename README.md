@@ -1,6 +1,6 @@
 # n8n-nodes-simgate
 
-Send and receive SMS from n8n through your own phone, using [SimGate](https://simgate.app).
+Send and receive SMS from n8n through your own phone, using [SimGate](https://www.simgate.app).
 
 SimGate turns an Android phone into an SMS gateway. Your messages go out from your own number and your own SIM — no sender IDs, no per-message pricing, no third party holding the number.
 
@@ -13,23 +13,28 @@ This package adds two nodes:
 
 ## Installation
 
-### Self-hosted
+SimGate is a verified n8n community node, so it works on n8n Cloud and self-hosted n8n.
 
-Go to **Settings → Community nodes → Install**, enter `n8n-nodes-simgate`, and confirm. You need an owner or admin account.
+### From the nodes panel (n8n Cloud and self-hosted)
 
-### n8n Cloud
+1. Open a workflow and open the nodes panel (select **+** or press **N**).
+2. Search for **SimGate**, select it, and select **Install**.
 
-Not yet. Installing community nodes from npm is a self-hosted feature, and n8n Cloud offers only nodes that have completed n8n's verification review — this package is in that queue.
+You need an owner or admin account. Once installed, everyone on the instance can use the node.
 
-Until it clears, call the SimGate API from an HTTP Request node. The requests are the same ones this node makes, so swapping the node in later is a straight replacement: see [the setup on simgate.app](https://simgate.app/integrations/n8n).
+If SimGate doesn't show up in search, verified community nodes may be turned off: on n8n Cloud, check the Cloud Admin Panel; on self-hosted n8n, check `N8N_VERIFIED_PACKAGES_ENABLED`.
+
+### By package name (self-hosted)
+
+Go to **Settings → Community nodes → Install**, enter `n8n-nodes-simgate`, and confirm.
 
 ## Credentials
 
 You need a SimGate account with at least one phone registered.
 
-1. In the [SimGate dashboard](https://simgate.app/dashboard), open **API** and create an API key.
+1. In the [SimGate dashboard](https://www.simgate.app/dashboard), open **API** and create an API key.
 2. In n8n, create a new **SimGate API** credential and paste the key.
-3. Leave **Base URL** as `https://api.simgate.app` unless you self-host the backend.
+3. Leave **Base URL** as `https://api.simgate.app`.
 4. Leave **Webhook Signing Secret** empty. The SimGate Trigger captures it automatically when it registers; fill it in only if you set the webhook up by hand in the dashboard.
 
 Use **Test** in the credential dialog to confirm the key works — it reads your account usage.
@@ -107,8 +112,9 @@ Lint and build run on that same Node 20.19. Only `npm run dev`, which boots a lo
 
 ## Resources
 
-- [SimGate documentation](https://simgate.app/integrations/n8n)
+- [SimGate documentation](https://www.simgate.app/integrations/n8n)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [Installing verified community nodes](https://docs.n8n.io/integrations/community-nodes/installation-and-management/install-verified-community-nodes/)
 
 ## License
 

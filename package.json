@@ -3,7 +3,7 @@
 	"version": "0.1.2",
 	"description": "Send and receive SMS through your own phone with SimGate",
 	"license": "MIT",
-	"homepage": "https://simgate.app",
+	"homepage": "https://www.simgate.app",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
