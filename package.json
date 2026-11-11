@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-simgate",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Send and receive SMS through your own phone with SimGate",
 	"license": "MIT",
 	"homepage": "https://www.simgate.app",
